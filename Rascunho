@@ -1,0 +1,25 @@
+ Spreadsheet => Planilha
+ sheet => Folha
+ write => Escritora
+
+Definir Formatação
+
+$spreadsheet->getActiveSheet()->fromArray(
+                    $data['dados'],  
+                    NULL,        // Os valores do Array com este valor não serão definidos
+                    // $inicioData 'D4'         // Coordenada superior esquerda do intervalo da planilha onde
+                                // queremos definir esses valores (o padrão é A1)
+                );
+
+$styleArray = array(
+                        'borders' => array(
+                            'outline' => array(
+                                'borderStyle' => Border::BORDER_THICK,
+                                'color' => array('argb' => '00000000'),
+                            ),
+                        ),
+                        'fill' => array(
+                            'fillType' => Fill::FILL_SOLID,
+                            'startColor' => array('argb' => 'FF4F81BD')
+                        )
+                    );
