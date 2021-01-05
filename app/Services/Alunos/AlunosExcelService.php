@@ -88,11 +88,11 @@ class AlunosExcelService
                 ]
             ];
             
-            $exportexcel = ExportExcelService::exportExcel($data);
+            $exportExcel = ExportExcelService::exportExcel($data);
 
             header('Content-Type: application/vnd.ms-excel');
             header("Content-Disposition: attachment; filename=alunos.xlsx");
-            $exportexcel->save("php://output");
+            $exportExcel->save("php://output");
         } catch (Throwable $th) {
             LogService::generateLogError($th);
             throw new Exception($th->getMessage(), $th->getCode());

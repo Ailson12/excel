@@ -12,6 +12,9 @@ class ExportExcelService
 {
     /**
      * ===========================================================
+     * Adicionar Gráfico no Excel
+     *  https://github.com/PHPOffice/PhpSpreadsheet/blob/master/samples/Chart/33_Chart_create_pie.php
+     * ===========================================================
      * Apenas os indices cabecalho e dados são obrigatorios
      * 
      * ===========================================================
