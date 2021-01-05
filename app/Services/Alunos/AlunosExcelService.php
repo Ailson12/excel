@@ -16,10 +16,11 @@ class AlunosExcelService
     public static function alunosExcel()
     {
         try {
-            $arrayData = User::get(['name', 'email', 'created_at'])->take(10)->toArray();
+            $arrayData = User::get(['name', 'email', 'created_at'])->take(100)->toArray();
+
             $totalLinhas = count($arrayData) + 1;
 
-            $estilos = [
+            $estilosPlanilha1 = [
                 "A1:C$totalLinhas" => [
                     'borders' => [
                         'allBorders' => [
@@ -51,29 +52,47 @@ class AlunosExcelService
                 ]
             ];
 
-            // $data = [
-            //     'nome-arquivo' => 'alunos.xlsx',
-            //     'cabecalho' => ['Nome', 'Email ', 'Data de Criação'],
-            //     'dados' => $arrayData,
-            //     'estilos' => $estilos,
-            //     'filtro' => 'A1:C1'
-            // ];
-            $data = [
-                'cabecalho' => ['Nome', 'Email ', 'Data de Criação'],
-                'dados' => [
-                    [
-                        [
-                            'ailson', 'ailson@gmail.com', '2020-12-31'
-                        ]
-                    ],
-                    [
-                        [
-                            'roberto', 'roberto@gmail.com', '2020-12-20'
-                        ]
-                    ]
-                ],
+            $arrayData2 = [
+                ['Status', 'Quantidade', 'Porcentagem'],
+                ['ativo', 'roberto@gmail.com', '2020-11-31'],
+                ['inativo', 'feitosa@gmail.com', '2020-10-31'],
+                [NULL, NULL, NULL],
+                ['Perfis', 'Quantidade', 'Porcentagem'],
+                ['admin', 'roberto@gmail.com', '2020-11-31'],
+                ['callcenter', 'feitosa@gmail.com', '2020-10-31'],
             ];
-            return ExportExcelService::exportExcel($data);
+
+            $planilha1 = [
+                'cabecalho' => ['Nome', 'Email', 'Data de Criação'],
+                'titulo' => 'Usuários',
+                'dados' => $arrayData,
+                'estilos' => $estilosPlanilha1,
+                'filtro' => 'A1:C1',
+            ];
+
+            $planilha2 = [
+                'cabecalho' => ['Nome ', 'Email', 'Data de Criação'],
+                'titulo' => 'Perfil',
+                'dados' => $arrayData2,
+                'tabelas' => [
+
+                ],
+                'filtro' => 'A1:C1'
+            ];
+
+            $data = [
+                'nome-arquivo' => 'alunos.xlsx',
+                'planilhas' => [
+                    $planilha1,
+                    $planilha2
+                ]
+            ];
+            
+            $exportexcel = ExportExcelService::exportExcel($data);
+
+            header('Content-Type: application/vnd.ms-excel');
+            header("Content-Disposition: attachment; filename=alunos.xlsx");
+            $exportexcel->save("php://output");
         } catch (Throwable $th) {
             LogService::generateLogError($th);
             throw new Exception($th->getMessage(), $th->getCode());

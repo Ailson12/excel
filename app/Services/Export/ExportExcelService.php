@@ -13,6 +13,7 @@ class ExportExcelService
     /**
      * ===========================================================
      * Apenas os indices cabecalho e dados são obrigatorios
+     * 
      * ===========================================================
      * O indice inicia-celula é utilizado para definir apartir de qual celula o Excel deve ser montado
      * Ex: 'inicia-celula' => 'A3'
@@ -38,40 +39,53 @@ class ExportExcelService
     public static function exportExcel(Array $data)
     {
         try {
-            array_unshift($data['dados'], $data['cabecalho']);
             $nomeArquivo = $data['nome-arquivo'] ?? 'document.xlsx';
-            $iniciaCelula = $data['inicia-celula'] ?? 'A1';
+            $planilhas = $data['planilhas'];
+
 
             $spreadsheet = new Spreadsheet();
 
-            $spreadsheet->getActiveSheet()
-                ->fromArray(
-                    $data['dados'],  
-                    NULL,
+            foreach ($planilhas as $key => $planilha) {
+                $iniciaCelula = $planilha['inicia-celula'] ?? 'A1';
+
+                $sheet = "sheet_$key";
+
+                if ($key == 0) {
+                    $sheet = $spreadsheet->getActiveSheet();
+                } else {
+                    $sheet = $spreadsheet->createSheet();
+                }
+
+                array_unshift($planilha['dados'], $planilha['cabecalho']);
+
+                $sheet->fromArray(
+                    $planilha['dados'],
+                    [NULL],
                     $iniciaCelula
                 );
 
-            $coluna = 'A';
-            for ($i = 0; $i < count($data['cabecalho']); $i++) {
-                $spreadsheet->getActiveSheet()->getColumnDimension($coluna++)->setAutoSize(true);
-            }
+                if (isset($planilha['titulo'])) {
+                    $sheet->setTitle($planilha['titulo']);
+                }
 
-            if (isset($data['filtro'])) {
-                $spreadsheet->getActiveSheet()->setAutoFilter($data['filtro']);
-            }
+                $coluna = $iniciaCelula[0];
+                for ($i = 0; $i < count($planilha['cabecalho']); $i++) {
+                    $sheet->getColumnDimension($coluna++)->setAutoSize(true);
+                }
 
-            $estilos = $data['estilos'] ?? false;
-            if ($estilos) {
-                foreach ($estilos as $key => $value) {
-                    $spreadsheet->getActiveSheet()->getStyle($key)->applyFromArray($value);
+                if (isset($planilha['filtro'])) {
+                    $sheet->setAutoFilter($planilha['filtro']);
+                }
+    
+                $estilos = $planilha['estilos'] ?? false;
+                if ($estilos) {
+                    foreach ($estilos as $key => $value) {
+                        $sheet->getStyle($key)->applyFromArray($value);
+                    }
                 }
             }
             
-            $writer = new Xlsx($spreadsheet);
-
-            header('Content-Type: application/vnd.ms-excel');
-            header("Content-Disposition: attachment; filename=$nomeArquivo");
-            $writer->save("php://output");
+            return new Xlsx($spreadsheet);
         } catch (Throwable $th) {
             LogService::generateLogError($th);
             throw new Exception('Erro ao gerar excel. Tente novamente', 500);
